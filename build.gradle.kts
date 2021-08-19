@@ -37,6 +37,8 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}")
     runtimeOnly("ch.qos.logback:logback-classic")
     implementation("io.micronaut:micronaut-validation")
+    testImplementation("org.mockito:mockito-all:1.10.19")
+    testImplementation("com.h2database:h2:1.4.200")
 
     runtimeOnly("com.fasterxml.jackson.module:jackson-module-kotlin")
 
