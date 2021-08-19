@@ -1,0 +1,23 @@
+micronaut:
+  application:
+    name: keyManagerPix
+
+datasources:
+  default:
+    url: ${DATABASE_URL:`jdbc:mysql://localhost:3306/desafio_pix`}
+    username: root
+    password: ${DATABASE_PASSWORD}
+    driverClassName: com.mysql.cj.jdbc.Driver
+    sql-dialect: 'MYSQL'
+
+jpa:
+  default:
+    properties:
+      hibernate:
+        bytecode:
+          provider: none
+        hbm2ddl:
+          auto: update
+        show_sql: true
+
+erp-itau-url: ${ERP_ITAU_URL:`http://localhost:9091`}

@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "br.com.zupacademy";
+option java_outer_classname = "KeyManagerPix";
+
+package br.com.zupacademy;
+
+service KeyManagerPixService {
+  rpc cadastraChave (ChavePixRequest) returns (ChavePixResponse) {}
+}
+enum TipoConta{
+  DESCONHECIDO = 0;
+  CONTA_POUPANCA = 1;
+  CONTA_CORRENTE = 2;
+}
+
+message ChavePixRequest {
+  enum TipoChave{
+    DESCONHECIDO = 0;
+    CHAVE_ALEATORIA = 1;
+    CELULAR = 2;
+    CPF = 3;
+    EMAIL = 4;
+  }
+
+  string uuidCliente = 1;
+  TipoChave tipoChave = 2;
+  string valorChave = 3;
+  TipoConta tipoConta = 4;
+}
+
+message ChavePixResponse {
+  int64 pixId = 1;
+}
