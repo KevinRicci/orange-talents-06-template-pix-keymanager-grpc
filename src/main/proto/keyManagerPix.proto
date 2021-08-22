@@ -6,8 +6,11 @@ option java_outer_classname = "KeyManagerPix";
 
 package br.com.zupacademy;
 
-service KeyManagerPixService {
+service KeyManagerPixServiceCadastra {
   rpc cadastraChave (ChavePixRequest) returns (ChavePixResponse) {}
+}
+
+service KeyManagerPixServiceDeleta{
   rpc deletaChave (DeletaChaveRequest) returns (DeletaChaveResponse){}
 }
 
@@ -41,5 +44,5 @@ message DeletaChaveRequest{
 }
 
 message DeletaChaveResponse{
-  string resposta= 1;
+  string pixId= 1;
 }

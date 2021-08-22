@@ -1,9 +1,10 @@
-package br.com.zupacademy.keyManager
+package br.com.zupacademy.keyManager.cadastra
 
 import br.com.zupacademy.ChavePixRequest
 import br.com.zupacademy.ChavePixRequest.TipoChave.CPF
 import br.com.zupacademy.ChavePixRequest.TipoChave.EMAIL
-import br.com.zupacademy.KeyManagerPixServiceGrpc
+import br.com.zupacademy.DeletaChaveRequest
+import br.com.zupacademy.KeyManagerPixServiceCadastraGrpc
 import br.com.zupacademy.chavePix.ChavePix
 import br.com.zupacademy.chavePix.ChavePixRepository
 import br.com.zupacademy.chavePix.TipoChave
@@ -27,8 +28,8 @@ import org.mockito.Mockito
 import javax.inject.Inject
 
 @MicronautTest(transactional = false)
-internal class ChavePixEndpointTest(
-    @Inject val clientChavePixGrpc: KeyManagerPixServiceGrpc.KeyManagerPixServiceBlockingStub,
+internal class CadastraChavePixEndpointTest(
+    @Inject val clientChavePixGrpc: KeyManagerPixServiceCadastraGrpc.KeyManagerPixServiceCadastraBlockingStub,
     @Inject val clientItau: ClientItau,
     @Inject val chavePixRepository: ChavePixRepository
 ){
@@ -254,8 +255,8 @@ internal class ChavePixEndpointTest(
     class Clients{
 
         @Bean
-        fun clientChavePixGrpc(@GrpcChannel(GrpcServerChannel.NAME) channel: ManagedChannel): KeyManagerPixServiceGrpc.KeyManagerPixServiceBlockingStub{
-            return KeyManagerPixServiceGrpc
+        fun clientChavePixGrpc(@GrpcChannel(GrpcServerChannel.NAME) channel: ManagedChannel): KeyManagerPixServiceCadastraGrpc.KeyManagerPixServiceCadastraBlockingStub{
+            return KeyManagerPixServiceCadastraGrpc
                 .newBlockingStub(channel)
         }
     }
