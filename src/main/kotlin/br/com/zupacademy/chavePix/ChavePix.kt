@@ -1,5 +1,7 @@
 package br.com.zupacademy.chavePix
 
+import org.hibernate.annotations.Type
+import java.util.*
 import javax.persistence.*
 import javax.validation.constraints.Max
 import javax.validation.constraints.NotBlank
@@ -7,7 +9,7 @@ import javax.validation.constraints.NotNull
 
 @Entity
 class ChavePix(
-    @field:NotBlank @field:Column(nullable = false)
+    @field:NotNull @field:Column(nullable = false)
     val uuidCliente: String,
     @field:NotNull @field:Enumerated(EnumType.STRING) @field:Column(nullable = false)
     val tipoChave: TipoChave,
@@ -17,6 +19,8 @@ class ChavePix(
     val tipoConta: TipoConta
 ){
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long? = null
+    @Id
+    @GeneratedValue
+    @Type(type = "uuid-char")
+    var id: UUID? = null
 }

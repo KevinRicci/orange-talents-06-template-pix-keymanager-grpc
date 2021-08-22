@@ -8,16 +8,17 @@ package br.com.zupacademy;
 
 service KeyManagerPixService {
   rpc cadastraChave (ChavePixRequest) returns (ChavePixResponse) {}
-}
-enum TipoConta{
-  DESCONHECIDO = 0;
-  CONTA_POUPANCA = 1;
-  CONTA_CORRENTE = 2;
+  rpc deletaChave (DeletaChaveRequest) returns (DeletaChaveResponse){}
 }
 
 message ChavePixRequest {
+  enum TipoConta{
+    UNKNOWN_TIPO_CONTA = 0;
+    CONTA_POUPANCA = 1;
+    CONTA_CORRENTE = 2;
+  }
   enum TipoChave{
-    DESCONHECIDO = 0;
+    UNKNOWN_TIPO_CHAVE = 0;
     CHAVE_ALEATORIA = 1;
     CELULAR = 2;
     CPF = 3;
@@ -31,5 +32,14 @@ message ChavePixRequest {
 }
 
 message ChavePixResponse {
-  int64 pixId = 1;
+  string pixId = 1;
+}
+
+message DeletaChaveRequest{
+  string pixId = 1;
+  string uuidCliente = 2;
+}
+
+message DeletaChaveResponse{
+  string resposta= 1;
 }

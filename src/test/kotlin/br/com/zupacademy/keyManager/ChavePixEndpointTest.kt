@@ -4,7 +4,6 @@ import br.com.zupacademy.ChavePixRequest
 import br.com.zupacademy.ChavePixRequest.TipoChave.CPF
 import br.com.zupacademy.ChavePixRequest.TipoChave.EMAIL
 import br.com.zupacademy.KeyManagerPixServiceGrpc
-import br.com.zupacademy.TipoConta.CONTA_CORRENTE
 import br.com.zupacademy.chavePix.ChavePix
 import br.com.zupacademy.chavePix.ChavePixRepository
 import br.com.zupacademy.chavePix.TipoChave
@@ -28,7 +27,7 @@ import org.mockito.Mockito
 import javax.inject.Inject
 
 @MicronautTest(transactional = false)
-internal class NovaChavePixEndpointTest(
+internal class ChavePixEndpointTest(
     @Inject val clientChavePixGrpc: KeyManagerPixServiceGrpc.KeyManagerPixServiceBlockingStub,
     @Inject val clientItau: ClientItau,
     @Inject val chavePixRepository: ChavePixRepository
@@ -52,7 +51,7 @@ internal class NovaChavePixEndpointTest(
         //ação
         val response = clientChavePixGrpc.cadastraChave(ChavePixRequest.newBuilder()
                                                     .setUuidCliente(UUID.toString())
-                                                    .setTipoConta(CONTA_CORRENTE)
+                                                    .setTipoConta(ChavePixRequest.TipoConta.CONTA_CORRENTE)
                                                     .setTipoChave(CPF)
                                                     .setValorChave("22779078049")
                                                     .build())
@@ -75,14 +74,14 @@ internal class NovaChavePixEndpointTest(
             clientChavePixGrpc.cadastraChave(
                 ChavePixRequest.newBuilder()
                     .setUuidCliente(UUID.toString())
-                    .setTipoConta(CONTA_CORRENTE)
+                    .setTipoConta(ChavePixRequest.TipoConta.CONTA_CORRENTE)
                     .setTipoChave(EMAIL)
                     .setValorChave("kevin@gmail.com")
                     .build()
             )}
         //validação
         assertEquals(Status.ALREADY_EXISTS.code, thrown.status.code)
-        assertEquals("Já existe uma chave igual", thrown.status.description)
+        assertEquals("chave já existente", thrown.status.description)
     }
 
     @Test
@@ -95,7 +94,7 @@ internal class NovaChavePixEndpointTest(
         val response = clientChavePixGrpc.cadastraChave(ChavePixRequest.newBuilder()
             .setUuidCliente(UUID.toString())
             .setTipoChave(ChavePixRequest.TipoChave.CHAVE_ALEATORIA)
-            .setTipoConta(br.com.zupacademy.TipoConta.CONTA_CORRENTE)
+            .setTipoConta(ChavePixRequest.TipoConta.CONTA_CORRENTE)
             .setValorChave("")
             .build())
 
@@ -114,7 +113,7 @@ internal class NovaChavePixEndpointTest(
         val response = assertThrows<StatusRuntimeException> {
             clientChavePixGrpc.cadastraChave(ChavePixRequest.newBuilder()
                 .setUuidCliente(UUID.toString())
-                .setTipoConta(br.com.zupacademy.TipoConta.CONTA_CORRENTE)
+                .setTipoConta(ChavePixRequest.TipoConta.CONTA_CORRENTE)
                 .setTipoChave(ChavePixRequest.TipoChave.CELULAR)
                 .setValorChave("+5511944536746")
                 .build())
@@ -122,7 +121,7 @@ internal class NovaChavePixEndpointTest(
 
         //validação
         assertEquals(Status.NOT_FOUND.code, response.status.code)
-        assertEquals("Cliente não encontrado", response.status.description)
+        assertEquals("cliente não encontrado", response.status.description)
     }
 
     @Test
@@ -136,7 +135,6 @@ internal class NovaChavePixEndpointTest(
 
         //validação
         assertEquals(Status.INVALID_ARGUMENT.code, response.status.code)
-        assertEquals("Tipo da chave e tipo da conta devem ser preenchidos", response.status.description)
         assertEquals(0, chavePixRepository.count())
     }
 
@@ -147,14 +145,13 @@ internal class NovaChavePixEndpointTest(
         val response = assertThrows<StatusRuntimeException> {
             clientChavePixGrpc.cadastraChave(ChavePixRequest.newBuilder()
                 .setUuidCliente("")
-                .setTipoConta(br.com.zupacademy.TipoConta.CONTA_POUPANCA)
+                .setTipoConta(ChavePixRequest.TipoConta.CONTA_POUPANCA)
                 .setTipoChave(ChavePixRequest.TipoChave.CHAVE_ALEATORIA)
                 .build())
         }
 
         //validação
         assertEquals(Status.INVALID_ARGUMENT.code, response.status.code)
-        assertEquals("Id do cliente obrigatório", response.status.description)
         assertEquals(0, chavePixRepository.count())
     }
 
@@ -168,7 +165,7 @@ internal class NovaChavePixEndpointTest(
         val response = assertThrows<StatusRuntimeException> {
             clientChavePixGrpc.cadastraChave(ChavePixRequest.newBuilder()
                 .setUuidCliente(UUID.toString())
-                .setTipoConta(br.com.zupacademy.TipoConta.CONTA_POUPANCA)
+                .setTipoConta(ChavePixRequest.TipoConta.CONTA_POUPANCA)
                 .setTipoChave(ChavePixRequest.TipoChave.EMAIL)
                 .setValorChave("aaa.com")
                 .build())
@@ -176,7 +173,75 @@ internal class NovaChavePixEndpointTest(
 
         //validação
         assertEquals(Status.INVALID_ARGUMENT.code, response.status.code)
-        assertEquals("Email inválido", response.status.description)
+        assertEquals("valor da chave inválido", response.status.description)
+        assertEquals(0, chavePixRepository.count())
+    }
+
+    @Test
+    fun `nao deve cadastrar chave com celular inválido`(){
+        //cenário
+        Mockito.`when`(clientItau.buscaConta(UUID.toString(), TipoConta.CONTA_POUPANCA.name))
+            .thenReturn(HttpResponse.ok())
+
+        //ação
+        val response = assertThrows<StatusRuntimeException> {
+            clientChavePixGrpc.cadastraChave(ChavePixRequest.newBuilder()
+                .setUuidCliente(UUID.toString())
+                .setTipoConta(ChavePixRequest.TipoConta.CONTA_POUPANCA)
+                .setTipoChave(ChavePixRequest.TipoChave.CELULAR)
+                .setValorChave("445367448")
+                .build())
+        }
+
+        //validação
+        assertEquals(Status.INVALID_ARGUMENT.code, response.status.code)
+        assertEquals("valor da chave inválido", response.status.description)
+        assertEquals(0, chavePixRepository.count())
+    }
+
+    @Test
+    fun `nao deve cadastrar chave com cpf inválido`() {
+        //cenário
+        Mockito.`when`(clientItau.buscaConta(UUID.toString(), TipoConta.CONTA_POUPANCA.name))
+            .thenReturn(HttpResponse.ok())
+
+        //ação
+        val response = assertThrows<StatusRuntimeException> {
+            clientChavePixGrpc.cadastraChave(
+                ChavePixRequest.newBuilder()
+                    .setUuidCliente(UUID.toString())
+                    .setTipoConta(ChavePixRequest.TipoConta.CONTA_POUPANCA)
+                    .setTipoChave(ChavePixRequest.TipoChave.CPF)
+                    .setValorChave("5305785902577")
+                    .build()
+            )
+        }
+
+        //validação
+        assertEquals(Status.INVALID_ARGUMENT.code, response.status.code)
+        assertEquals("valor da chave inválido", response.status.description)
+        assertEquals(0, chavePixRepository.count())
+    }
+
+    @Test
+    fun `nao deve cadastrar chave aleatória quando houver valor`(){
+        //cenário
+        Mockito.`when`(clientItau.buscaConta(UUID.toString(), TipoConta.CONTA_POUPANCA.name))
+            .thenReturn(HttpResponse.ok())
+
+        //ação
+        val response = assertThrows<StatusRuntimeException> {
+            clientChavePixGrpc.cadastraChave(ChavePixRequest.newBuilder()
+                .setUuidCliente(UUID.toString())
+                .setTipoConta(ChavePixRequest.TipoConta.CONTA_POUPANCA)
+                .setTipoChave(ChavePixRequest.TipoChave.CHAVE_ALEATORIA)
+                .setValorChave("+5511944587944")
+                .build())
+        }
+
+        //validação
+        assertEquals(Status.INVALID_ARGUMENT.code, response.status.code)
+        assertEquals("valor da chave inválido", response.status.description)
         assertEquals(0, chavePixRepository.count())
     }
 
