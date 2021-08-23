@@ -14,7 +14,7 @@ class ChavePix(
     @field:NotNull @field:Enumerated(EnumType.STRING) @field:Column(nullable = false)
     val tipoChave: TipoChave,
     @field:NotBlank @field:Column(unique = true, nullable = false) @field:Max(77)
-    val valorChave: String,
+    var valorChave: String,
     @field:NotNull @field:Enumerated(EnumType.STRING) @field:Column(nullable = false)
     val tipoConta: TipoConta
 ){
@@ -23,4 +23,9 @@ class ChavePix(
     @GeneratedValue
     @Type(type = "uuid-char")
     var id: UUID? = null
+
+
+    fun atualizaChave(valor: String){
+        this.valorChave = valor
+    }
 }

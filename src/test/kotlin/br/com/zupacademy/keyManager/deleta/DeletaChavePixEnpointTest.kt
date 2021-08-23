@@ -6,7 +6,7 @@ import br.com.zupacademy.chavePix.ChavePix
 import br.com.zupacademy.chavePix.ChavePixRepository
 import br.com.zupacademy.chavePix.TipoChave
 import br.com.zupacademy.chavePix.TipoConta
-import br.com.zupacademy.client.ClientItau
+import br.com.zupacademy.client.itau.ClientItau
 import io.grpc.ManagedChannel
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
@@ -124,7 +124,7 @@ internal class DeletaChavePixEnpointTest(
     }
 
     @MockBean(ClientItau::class)
-    fun clientItauMock(): ClientItau{
+    fun clientItauMock(): ClientItau {
         return Mockito.mock(ClientItau::class.java)
     }
 }

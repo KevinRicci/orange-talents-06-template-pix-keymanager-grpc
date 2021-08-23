@@ -25,3 +25,4 @@ jpa:
         show_sql: true
 
 erp-itau-url: ${ERP_ITAU_URL:`http://localhost:9091`}
+bcb-url: ${BCB_URL:`http://localhost:8082`}

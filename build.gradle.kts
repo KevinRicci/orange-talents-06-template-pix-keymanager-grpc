@@ -40,10 +40,9 @@ dependencies {
     implementation("io.micronaut:micronaut-validation")
     testImplementation("org.mockito:mockito-all:1.10.19")
     testImplementation("com.h2database:h2:1.4.200")
-
     runtimeOnly("com.fasterxml.jackson.module:jackson-module-kotlin")
-
     implementation("io.micronaut:micronaut-http-client")
+    implementation("io.micronaut.xml:micronaut-jackson-xml")
 
     //jpa
     implementation("io.micronaut.sql:micronaut-jdbc-hikari")

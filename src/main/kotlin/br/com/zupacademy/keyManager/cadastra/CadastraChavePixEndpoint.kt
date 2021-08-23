@@ -2,12 +2,10 @@ package br.com.zupacademy.keyManager.cadastra
 
 import br.com.zupacademy.*
 import br.com.zupacademy.chavePix.ChavePixRepository
-import br.com.zupacademy.client.ClientItau
+import br.com.zupacademy.client.itau.ClientItau
 import br.com.zupacademy.exception.handler.ErrorHandler
 import br.com.zupacademy.keyManager.extension.toModel
-import io.grpc.Status
 import io.grpc.stub.StreamObserver
-import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 

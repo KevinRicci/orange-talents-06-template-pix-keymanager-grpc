@@ -2,6 +2,7 @@ package br.com.zupacademy.exception.handler
 
 import br.com.zupacademy.exception.*
 import io.grpc.Status
+import io.micronaut.http.client.exceptions.HttpClientResponseException
 import javax.validation.ConstraintViolationException
 
 /**
@@ -18,6 +19,7 @@ class DefaultExceptionHandler : ExceptionHandler<Exception> {
             is ForbiddenException -> Status.PERMISSION_DENIED.withDescription(e.message)
             is InternalServerErrorException -> Status.INTERNAL.withDescription(e.message)
             is IllegalStateException -> Status.FAILED_PRECONDITION.withDescription(e.message)
+            is HttpClientResponseException -> Status.INTERNAL.withDescription("Erro interno")
             else -> Status.UNKNOWN
         }
         return ExceptionHandler.StatusWithDetails(status.withCause(e))
