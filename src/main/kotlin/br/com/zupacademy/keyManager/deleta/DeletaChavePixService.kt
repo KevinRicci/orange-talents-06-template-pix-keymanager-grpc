@@ -11,6 +11,7 @@ import java.lang.IllegalStateException
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
+import javax.transaction.Transactional
 import javax.validation.constraints.NotBlank
 
 @Singleton
@@ -20,6 +21,7 @@ class DeletaChavePixService(
     @Inject val clienteBCB: ClienteBCB
 ) {
 
+    @Transactional
     fun deleta(@NotBlank @ValidUUID pixId: String,
                @NotBlank @ValidUUID uuidCliente: String){
         //verifica se a chave existe e pertence ao cliente

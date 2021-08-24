@@ -4,11 +4,12 @@ import br.com.zupacademy.ChavePixRequest
 import br.com.zupacademy.ChavePixRequest.TipoChave.CPF
 import br.com.zupacademy.ChavePixRequest.TipoChave.EMAIL
 import br.com.zupacademy.KeyManagerPixServiceCadastraGrpc
-import br.com.zupacademy.chavePix.ChavePix
-import br.com.zupacademy.chavePix.ChavePixRepository
-import br.com.zupacademy.chavePix.TipoChave
-import br.com.zupacademy.chavePix.TipoConta
+import br.com.zupacademy.chavePix.*
+import br.com.zupacademy.client.bcb.*
 import br.com.zupacademy.client.itau.ClientItau
+import br.com.zupacademy.client.itau.Instituicao
+import br.com.zupacademy.client.itau.ItauResponse
+import br.com.zupacademy.client.itau.Titular
 import io.grpc.ManagedChannel
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
@@ -24,12 +25,14 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 @MicronautTest(transactional = false)
 internal class CadastraChavePixEndpointTest(
     @Inject val clientChavePixGrpc: KeyManagerPixServiceCadastraGrpc.KeyManagerPixServiceCadastraBlockingStub,
     @Inject val clientItau: ClientItau,
+    @Inject val clientBCB: ClienteBCB,
     @Inject val chavePixRepository: ChavePixRepository
 ){
 
@@ -40,13 +43,45 @@ internal class CadastraChavePixEndpointTest(
 
     companion object{
         val UUID = java.util.UUID.randomUUID()
+
+        fun criaChavePixBCBRequest(): BCBCriaChavePixRequest{
+            return BCBCriaChavePixRequest(ChavePix(
+                UUID.toString(),
+                TipoChave.CPF,
+                "22779078049",
+                TipoConta.CONTA_CORRENTE),
+                ContaAssociada("1234", "55454", TipoConta.CONTA_CORRENTE, "kevin", "52037557874"
+                )
+            )
+        }
+
+        fun criaChavePixBCBReponse(): BCBCriaChavePixResponse{
+            return BCBCriaChavePixResponse(KeyType.CPF,
+                "22779078049",
+                BankAccount("2121", "1213", AccountType.CACC),
+                Owner(Type.NATURAL_PERSON, "kevin", "5203757874"),
+                LocalDateTime.now()
+            )
+        }
+
+        fun criaItauResponse(): ItauResponse{
+            return ItauResponse("CONTA_CORRENTE",
+                Instituicao("Itaú", "60701190"),
+                "1212",
+                "1212",
+                Titular("c56dfef4-7901-44fb-84e2-a2cefb157890", "Kevin", "52037557874")
+            )
+        }
     }
 
     @Test
     fun `deve cadastrar nova chave`(){
         //cenário
         Mockito.`when`(clientItau.buscaConta(UUID.toString(), TipoConta.CONTA_CORRENTE.toString()))
-            .thenReturn(HttpResponse.ok())
+            .thenReturn(HttpResponse.ok(criaItauResponse()))
+
+        Mockito.`when`(clientBCB.cadastraChave(criaChavePixBCBRequest()))
+            .thenReturn(HttpResponse.created(criaChavePixBCBReponse()))
 
         //ação
         val response = clientChavePixGrpc.cadastraChave(ChavePixRequest.newBuilder()
@@ -88,7 +123,23 @@ internal class CadastraChavePixEndpointTest(
     fun `deve gerar chave aleatória`(){
         //cenário
         Mockito.`when`(clientItau.buscaConta(UUID.toString(), TipoConta.CONTA_CORRENTE.name))
-            .thenReturn(HttpResponse.ok())
+            .thenReturn(HttpResponse.ok(criaItauResponse()))
+
+        Mockito.`when`(clientBCB.cadastraChave(
+            BCBCriaChavePixRequest(
+                KeyType.RANDOM,
+                "*any*",  //como no meio do fluxo é gerado um UUID random provisório, não tenho como saber o valor
+                BankAccount("123", "123", AccountType.CACC),
+                Owner(Type.NATURAL_PERSON, "kevin", "5203757874")
+            )
+        )).thenReturn(
+            HttpResponse.created(BCBCriaChavePixResponse(
+            KeyType.RANDOM, "cdb14b95-ea86-4d18-ae95-56960afdce41",
+            BankAccount("1234", "1234", AccountType.CACC),
+            Owner(Type.NATURAL_PERSON, "kevin", "5203757874"),
+            LocalDateTime.now()
+        )))
+
 
         //ação
         val response = clientChavePixGrpc.cadastraChave(ChavePixRequest.newBuilder()
@@ -101,6 +152,7 @@ internal class CadastraChavePixEndpointTest(
         //validação
         assertNotNull(response.pixId)
         assertEquals(1, chavePixRepository.count())
+        assertTrue(chavePixRepository.existsByValorChave("cdb14b95-ea86-4d18-ae95-56960afdce41"))
     }
 
     @Test
@@ -245,18 +297,47 @@ internal class CadastraChavePixEndpointTest(
         assertEquals(0, chavePixRepository.count())
     }
 
+    @Test
+    fun `não deve gerar chave quando cliente BCB retornar erro`(){
+        //cenário
+        Mockito.`when`(clientItau.buscaConta(UUID.toString(), TipoConta.CONTA_CORRENTE.name))
+            .thenReturn(HttpResponse.ok(criaItauResponse()))
+        Mockito.`when`(clientBCB.cadastraChave(criaChavePixBCBRequest()))
+            .thenReturn(HttpResponse.badRequest())
+
+        //ação
+        val response = assertThrows<StatusRuntimeException> {
+            clientChavePixGrpc.cadastraChave(ChavePixRequest.newBuilder()
+                .setUuidCliente(UUID.toString())
+                .setTipoConta(ChavePixRequest.TipoConta.CONTA_CORRENTE)
+                .setTipoChave(CPF)
+                .setValorChave("52037557879")
+                .build())
+        }
+
+        //validação
+        assertEquals(0, chavePixRepository.count())
+        assertEquals(Status.FAILED_PRECONDITION.code, response.status.code)
+        assertEquals("Falha ao cadastrar chave no Banco Central do Brasil (BCB)", response.status.description)
+    }
+
     @MockBean(ClientItau::class)
     fun clientItauMock(): ClientItau {
         return Mockito.mock(ClientItau::class.java)
     }
 
-    @Factory
-    class Clients{
+    @MockBean(ClienteBCB::class)
+    fun clientBCBMock(): ClienteBCB{
+        return Mockito.mock(ClienteBCB::class.java)
+    }
+}
 
-        @Bean
-        fun clientChavePixGrpc(@GrpcChannel(GrpcServerChannel.NAME) channel: ManagedChannel): KeyManagerPixServiceCadastraGrpc.KeyManagerPixServiceCadastraBlockingStub{
-            return KeyManagerPixServiceCadastraGrpc
-                .newBlockingStub(channel)
-        }
+@Factory
+class Clients{
+
+    @Bean
+    fun clientChavePixGrpc(@GrpcChannel(GrpcServerChannel.NAME) channel: ManagedChannel): KeyManagerPixServiceCadastraGrpc.KeyManagerPixServiceCadastraBlockingStub{
+        return KeyManagerPixServiceCadastraGrpc
+            .newBlockingStub(channel)
     }
 }

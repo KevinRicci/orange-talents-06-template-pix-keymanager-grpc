@@ -32,6 +32,20 @@ data class BCBDeletaChavePixRequest(
     val key: String
 ){
     val participant: String = "60701190" //itau ispb
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as BCBDeletaChavePixRequest
+
+        if (key != other.key) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return key.hashCode()
+    }
 }
 
 data class BCBCriaChavePixRequest(
@@ -64,6 +78,22 @@ data class BCBCriaChavePixRequest(
             taxIdNumber = contaAssociada.documento
         )
     )
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as BCBCriaChavePixRequest
+
+        if (keyType != other.keyType) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return keyType?.hashCode() ?: 0
+    }
+
 }
 
 data class Owner(

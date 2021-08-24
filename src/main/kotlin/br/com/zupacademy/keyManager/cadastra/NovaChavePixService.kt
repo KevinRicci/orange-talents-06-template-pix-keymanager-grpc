@@ -59,10 +59,6 @@ class NovaChavePixService(
             )
         ))
 
-        println(bcbResponse.status)
-        println(bcbResponse.body())
-        println(bcbResponse.reason())
-
         if(bcbResponse.status != HttpStatus.CREATED) throw IllegalStateException("Falha ao cadastrar chave no Banco Central do Brasil (BCB)")
         //atualiza chave com o valor retornado pelo bcb, no caso, para chave tipo aleatória
         chavePix.atualizaChave(bcbResponse.body().key)
