@@ -1,6 +1,7 @@
 package br.com.zupacademy.chavePix
 
 import org.hibernate.annotations.Type
+import java.time.LocalDateTime
 import java.util.*
 import javax.persistence.*
 import javax.validation.constraints.Max
@@ -16,7 +17,8 @@ class ChavePix(
     @field:NotBlank @field:Column(unique = true, nullable = false) @field:Max(77)
     var valorChave: String,
     @field:NotNull @field:Enumerated(EnumType.STRING) @field:Column(nullable = false)
-    val tipoConta: TipoConta
+    val tipoConta: TipoConta,
+    val horaCadastro: LocalDateTime = LocalDateTime.now()
 ){
 
     @Id

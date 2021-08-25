@@ -5,6 +5,7 @@ option java_package = "br.com.zupacademy";
 option java_outer_classname = "KeyManagerPix";
 
 package br.com.zupacademy;
+import "google/protobuf/timestamp.proto";
 
 service KeyManagerPixServiceCadastra {
   rpc cadastraChave (ChavePixRequest) returns (ChavePixResponse) {}
@@ -14,19 +15,52 @@ service KeyManagerPixServiceDeleta{
   rpc deletaChave (DeletaChaveRequest) returns (DeletaChaveResponse){}
 }
 
+service KeyManagerPixServiceConsulta{
+  rpc consultaChavePix(ConsultaChavePixRequest) returns (ConsultaChavePixResponse){}
+}
+
+message ConsultaChavePixRequest{
+  message PorPixIdEIdCliente{
+    string pixId = 1;
+    string uuidCliente = 2;
+  }
+
+  oneof Filtro{
+    PorPixIdEIdCliente porPixIdEIdCliente = 1;
+    string chavePix = 2;
+  }
+}
+
+message ConsultaChavePixResponse{
+  optional string pixId = 1;
+  optional string uuidCliente = 2;
+  TipoChave tipoChave = 3;
+  string valorChave = 4;
+  string nomeTitular = 5;
+  string cpfTitular = 6;
+  string nomeInstituicao = 7;
+  int32 agencia = 8;
+  int32 numeroConta = 9;
+  TipoConta tipoConta = 10;
+  google.protobuf.Timestamp horaCadastro = 11;
+
+}
+
+enum TipoChave{
+  UNKNOWN_TIPO_CHAVE = 0;
+  CHAVE_ALEATORIA = 1;
+  CELULAR = 2;
+  CPF = 3;
+  EMAIL = 4;
+}
+
+enum TipoConta{
+  UNKNOWN_TIPO_CONTA = 0;
+  CONTA_POUPANCA = 1;
+  CONTA_CORRENTE = 2;
+}
+
 message ChavePixRequest {
-  enum TipoConta{
-    UNKNOWN_TIPO_CONTA = 0;
-    CONTA_POUPANCA = 1;
-    CONTA_CORRENTE = 2;
-  }
-  enum TipoChave{
-    UNKNOWN_TIPO_CHAVE = 0;
-    CHAVE_ALEATORIA = 1;
-    CELULAR = 2;
-    CPF = 3;
-    EMAIL = 4;
-  }
 
   string uuidCliente = 1;
   TipoChave tipoChave = 2;

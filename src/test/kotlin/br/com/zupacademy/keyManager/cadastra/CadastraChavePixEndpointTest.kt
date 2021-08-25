@@ -1,9 +1,10 @@
 package br.com.zupacademy.keyManager.cadastra
 
 import br.com.zupacademy.ChavePixRequest
-import br.com.zupacademy.ChavePixRequest.TipoChave.CPF
-import br.com.zupacademy.ChavePixRequest.TipoChave.EMAIL
 import br.com.zupacademy.KeyManagerPixServiceCadastraGrpc
+import br.com.zupacademy.TipoChave.*
+import br.com.zupacademy.TipoConta.CONTA_CORRENTE
+import br.com.zupacademy.TipoConta.CONTA_POUPANCA
 import br.com.zupacademy.chavePix.*
 import br.com.zupacademy.client.bcb.*
 import br.com.zupacademy.client.itau.ClientItau
@@ -58,7 +59,7 @@ internal class CadastraChavePixEndpointTest(
         fun criaChavePixBCBReponse(): BCBCriaChavePixResponse{
             return BCBCriaChavePixResponse(KeyType.CPF,
                 "22779078049",
-                BankAccount("2121", "1213", AccountType.CACC),
+                BankAccount("2121", "1213", AccountType.CACC, "60701190"),
                 Owner(Type.NATURAL_PERSON, "kevin", "5203757874"),
                 LocalDateTime.now()
             )
@@ -86,7 +87,7 @@ internal class CadastraChavePixEndpointTest(
         //ação
         val response = clientChavePixGrpc.cadastraChave(ChavePixRequest.newBuilder()
                                                     .setUuidCliente(UUID.toString())
-                                                    .setTipoConta(ChavePixRequest.TipoConta.CONTA_CORRENTE)
+                                                    .setTipoConta(CONTA_CORRENTE)
                                                     .setTipoChave(CPF)
                                                     .setValorChave("22779078049")
                                                     .build())
@@ -109,7 +110,7 @@ internal class CadastraChavePixEndpointTest(
             clientChavePixGrpc.cadastraChave(
                 ChavePixRequest.newBuilder()
                     .setUuidCliente(UUID.toString())
-                    .setTipoConta(ChavePixRequest.TipoConta.CONTA_CORRENTE)
+                    .setTipoConta(CONTA_CORRENTE)
                     .setTipoChave(EMAIL)
                     .setValorChave("kevin@gmail.com")
                     .build()
@@ -129,13 +130,13 @@ internal class CadastraChavePixEndpointTest(
             BCBCriaChavePixRequest(
                 KeyType.RANDOM,
                 "*any*",  //como no meio do fluxo é gerado um UUID random provisório, não tenho como saber o valor
-                BankAccount("123", "123", AccountType.CACC),
+                BankAccount("123", "123", AccountType.CACC, "60701190"),
                 Owner(Type.NATURAL_PERSON, "kevin", "5203757874")
             )
         )).thenReturn(
             HttpResponse.created(BCBCriaChavePixResponse(
             KeyType.RANDOM, "cdb14b95-ea86-4d18-ae95-56960afdce41",
-            BankAccount("1234", "1234", AccountType.CACC),
+            BankAccount("1234", "1234", AccountType.CACC, "60701190"),
             Owner(Type.NATURAL_PERSON, "kevin", "5203757874"),
             LocalDateTime.now()
         )))
@@ -144,8 +145,8 @@ internal class CadastraChavePixEndpointTest(
         //ação
         val response = clientChavePixGrpc.cadastraChave(ChavePixRequest.newBuilder()
             .setUuidCliente(UUID.toString())
-            .setTipoChave(ChavePixRequest.TipoChave.CHAVE_ALEATORIA)
-            .setTipoConta(ChavePixRequest.TipoConta.CONTA_CORRENTE)
+            .setTipoChave(CHAVE_ALEATORIA)
+            .setTipoConta(CONTA_CORRENTE)
             .setValorChave("")
             .build())
 
@@ -165,8 +166,8 @@ internal class CadastraChavePixEndpointTest(
         val response = assertThrows<StatusRuntimeException> {
             clientChavePixGrpc.cadastraChave(ChavePixRequest.newBuilder()
                 .setUuidCliente(UUID.toString())
-                .setTipoConta(ChavePixRequest.TipoConta.CONTA_CORRENTE)
-                .setTipoChave(ChavePixRequest.TipoChave.CELULAR)
+                .setTipoConta(CONTA_CORRENTE)
+                .setTipoChave(CELULAR)
                 .setValorChave("+5511944536746")
                 .build())
         }
@@ -197,8 +198,8 @@ internal class CadastraChavePixEndpointTest(
         val response = assertThrows<StatusRuntimeException> {
             clientChavePixGrpc.cadastraChave(ChavePixRequest.newBuilder()
                 .setUuidCliente("")
-                .setTipoConta(ChavePixRequest.TipoConta.CONTA_POUPANCA)
-                .setTipoChave(ChavePixRequest.TipoChave.CHAVE_ALEATORIA)
+                .setTipoConta(CONTA_POUPANCA)
+                .setTipoChave(CHAVE_ALEATORIA)
                 .build())
         }
 
@@ -217,8 +218,8 @@ internal class CadastraChavePixEndpointTest(
         val response = assertThrows<StatusRuntimeException> {
             clientChavePixGrpc.cadastraChave(ChavePixRequest.newBuilder()
                 .setUuidCliente(UUID.toString())
-                .setTipoConta(ChavePixRequest.TipoConta.CONTA_POUPANCA)
-                .setTipoChave(ChavePixRequest.TipoChave.EMAIL)
+                .setTipoConta(CONTA_POUPANCA)
+                .setTipoChave(EMAIL)
                 .setValorChave("aaa.com")
                 .build())
         }
@@ -239,8 +240,8 @@ internal class CadastraChavePixEndpointTest(
         val response = assertThrows<StatusRuntimeException> {
             clientChavePixGrpc.cadastraChave(ChavePixRequest.newBuilder()
                 .setUuidCliente(UUID.toString())
-                .setTipoConta(ChavePixRequest.TipoConta.CONTA_POUPANCA)
-                .setTipoChave(ChavePixRequest.TipoChave.CELULAR)
+                .setTipoConta(CONTA_POUPANCA)
+                .setTipoChave(CELULAR)
                 .setValorChave("445367448")
                 .build())
         }
@@ -262,8 +263,8 @@ internal class CadastraChavePixEndpointTest(
             clientChavePixGrpc.cadastraChave(
                 ChavePixRequest.newBuilder()
                     .setUuidCliente(UUID.toString())
-                    .setTipoConta(ChavePixRequest.TipoConta.CONTA_POUPANCA)
-                    .setTipoChave(ChavePixRequest.TipoChave.CPF)
+                    .setTipoConta(CONTA_POUPANCA)
+                    .setTipoChave(CPF)
                     .setValorChave("5305785902577")
                     .build()
             )
@@ -285,8 +286,8 @@ internal class CadastraChavePixEndpointTest(
         val response = assertThrows<StatusRuntimeException> {
             clientChavePixGrpc.cadastraChave(ChavePixRequest.newBuilder()
                 .setUuidCliente(UUID.toString())
-                .setTipoConta(ChavePixRequest.TipoConta.CONTA_POUPANCA)
-                .setTipoChave(ChavePixRequest.TipoChave.CHAVE_ALEATORIA)
+                .setTipoConta(CONTA_POUPANCA)
+                .setTipoChave(CHAVE_ALEATORIA)
                 .setValorChave("+5511944587944")
                 .build())
         }
@@ -309,7 +310,7 @@ internal class CadastraChavePixEndpointTest(
         val response = assertThrows<StatusRuntimeException> {
             clientChavePixGrpc.cadastraChave(ChavePixRequest.newBuilder()
                 .setUuidCliente(UUID.toString())
-                .setTipoConta(ChavePixRequest.TipoConta.CONTA_CORRENTE)
+                .setTipoConta(CONTA_CORRENTE)
                 .setTipoChave(CPF)
                 .setValorChave("52037557879")
                 .build())

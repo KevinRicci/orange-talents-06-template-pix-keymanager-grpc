@@ -2,11 +2,16 @@ package br.com.zupacademy.client.bcb
 
 import br.com.zupacademy.chavePix.ChavePix
 import br.com.zupacademy.chavePix.ContaAssociada
+import br.com.zupacademy.chavePix.TipoChave
+import br.com.zupacademy.chavePix.TipoConta
+import br.com.zupacademy.client.bcb.KeyType.CPF
+import br.com.zupacademy.keyManager.consulta.ChavePixInfo
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.*
 import io.micronaut.http.client.annotation.Client
 import java.time.LocalDateTime
+import kotlin.IllegalStateException
 
 @Client("\${bcb-url}")
 interface ClienteBCB {
@@ -20,6 +25,58 @@ interface ClienteBCB {
     @Produces(MediaType.APPLICATION_XML)
     @Delete ("/api/v1/pix/keys/{key}")
     fun deletaChave(@PathVariable key: String, @Body bcbDeletaChavePixRequest: BCBDeletaChavePixRequest): HttpResponse<BCBDeletaChavePixResponse>
+
+    @Consumes(MediaType.APPLICATION_XML)
+    @Produces(MediaType.APPLICATION_XML)
+    @Get("/api/v1/pix/keys/{key}")
+    fun buscaChave(@PathVariable key: String): HttpResponse<BCBBuscaChavePixResponse>
+}
+
+data class BCBBuscaChavePixResponse(
+    val keyType: KeyType,
+    val key: String,
+    val bankAccount: BankAccount,
+    val owner: Owner,
+    val createdAt: LocalDateTime
+){
+
+    fun toModel(): ChavePixInfo{
+        return ChavePixInfo(
+            pixId = null,
+            uuidCliente = null,
+            tipoChave = when(this.keyType.name){
+                "CPF" ->{
+                    TipoChave.CPF
+                }
+                "EMAIL" ->{
+                    TipoChave.EMAIL
+                }
+                "PHONE" ->{
+                    TipoChave.CELULAR
+                }
+                "RANDOM" ->{
+                    TipoChave.CHAVE_ALEATORIA
+                }
+                else -> throw IllegalStateException("Erro ao buscar tipo de chave no Banco Central do Brasil")
+            },
+            valorChave = this.key,
+            nomeTitular = owner.name,
+            cpfTitular = owner.taxIdNumber,
+            nomeInstituicao = Instituicoes().of(this.bankAccount.participant),
+            agencia = bankAccount.branch.toInt(),
+            numeroConta = this.bankAccount.accountNumber.toInt(),
+            tipoConta = when(this.bankAccount.accountType.name){
+                "CACC" ->{
+                    TipoConta.CONTA_CORRENTE
+                }
+                "SVGS" ->{
+                    TipoConta.CONTA_POUPANCA
+                }
+                else -> throw IllegalStateException("Erro ao buscar tipo de conta no Banco central do Brasil")
+            },
+            horaCadastro = this.createdAt
+        )
+    }
 }
 
 data class BCBDeletaChavePixResponse(
@@ -56,7 +113,7 @@ data class BCBCriaChavePixRequest(
 ){
     constructor(chavePix: ChavePix, contaAssociada: ContaAssociada): this(
         keyType = when(chavePix.tipoChave.name){
-            "CPF" -> KeyType.CPF
+            "CPF" -> CPF
             "EMAIL" -> KeyType.EMAIL
             "CELULAR" -> KeyType.PHONE
             "CHAVE_ALEATORIA" -> KeyType.RANDOM
@@ -69,8 +126,9 @@ data class BCBCriaChavePixRequest(
             accountType = when(contaAssociada.tipoConta.name){
                 "CONTA_CORRENTE" -> AccountType.CACC
                 "CONTA_POUPANCA" -> AccountType.SVGS
-                else -> null
-            }
+                else -> throw IllegalArgumentException("Erro ao atribuir tipo de conta")
+            },
+            participant = "60701190" //itau ispb
         ),
         owner = Owner(
             type = Type.NATURAL_PERSON,
@@ -110,10 +168,9 @@ enum class Type{
 data class BankAccount(
     val branch: String,
     val accountNumber: String,
-    val accountType: AccountType?
-){
-    val participant: String = "60701190" //itau ispb
-}
+    val accountType: AccountType,
+    val participant: String
+){}
 
 enum class AccountType{
     CACC,

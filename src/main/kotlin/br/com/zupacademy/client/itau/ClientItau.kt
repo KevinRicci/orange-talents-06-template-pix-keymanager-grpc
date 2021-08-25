@@ -1,5 +1,8 @@
 package br.com.zupacademy.client.itau
 
+import br.com.zupacademy.chavePix.ChavePix
+import br.com.zupacademy.chavePix.TipoConta
+import br.com.zupacademy.keyManager.consulta.ChavePixInfo
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.PathVariable
@@ -19,7 +22,23 @@ data class ItauResponse(
     val agencia: String,
     val numero: String,
     val titular: Titular
-){}
+){
+    fun toModel(chavePix: ChavePix): ChavePixInfo{
+        return ChavePixInfo(
+            chavePix.id.toString(),
+            chavePix.uuidCliente,
+            chavePix.tipoChave,
+            chavePix.valorChave,
+            titular.nome,
+            titular.cpf,
+            instituicao.nome,
+            this.agencia.toInt(),
+            this.numero.toInt(),
+            TipoConta.valueOf(this.tipo),
+            chavePix.horaCadastro
+        )
+    }
+}
 
 data class Titular(
     val id: String,
