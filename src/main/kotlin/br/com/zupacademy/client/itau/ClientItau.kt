@@ -23,6 +23,11 @@ data class ItauResponse(
     val numero: String,
     val titular: Titular
 ){
+
+    /**
+     * Usado em conjunto com uma chave pix já buscada para montar um ChavePixInfo
+     * @param chavePix Deve pertencer à conta buscada
+     */
     fun toModel(chavePix: ChavePix): ChavePixInfo{
         return ChavePixInfo(
             chavePix.id.toString(),

@@ -21,6 +21,11 @@ class ChavePixInfo(
     val horaCadastro: LocalDateTime
 ) {
 
+    /**
+     * Consultas internas por pixId e uuidCliente retornam esses dois campos juntos,
+     * consultas pelo valor da chave pix no Banco Central do Brasil não retornam esses campos.
+     * ChavePixInfo é usado nos dois contextos
+     */
     fun toConsultaChavePixResponse(): ConsultaChavePixResponse{
         if(this.pixId != null && this.uuidCliente != null){
             return ConsultaChavePixResponse.newBuilder()
