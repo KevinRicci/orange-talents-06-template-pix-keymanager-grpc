@@ -4,7 +4,6 @@ import br.com.zupacademy.*
 import br.com.zupacademy.chavePix.ChavePixRepository
 import br.com.zupacademy.client.itau.ClientItau
 import br.com.zupacademy.exception.handler.ErrorHandler
-import br.com.zupacademy.keyManager.extension.toModel
 import io.grpc.stub.StreamObserver
 import javax.inject.Inject
 import javax.inject.Singleton

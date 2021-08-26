@@ -17,6 +17,23 @@ service KeyManagerPixServiceDeleta{
 
 service KeyManagerPixServiceConsulta{
   rpc consultaChavePix(ConsultaChavePixRequest) returns (ConsultaChavePixResponse){}
+  rpc buscaChaves(BuscaChavesPixRequest) returns (BuscaChavesPixResponse){}
+}
+
+message BuscaChavesPixRequest{
+  string uuidCliente = 1;
+}
+
+message BuscaChavesPixResponse{
+  message Chaves{
+    string pixId = 1;
+    string uuidCliente = 2;
+    TipoChave tipoChave = 3;
+    string valorChave = 4;
+    TipoConta tipoConta = 5;
+    google.protobuf.Timestamp horaCadastro = 6;
+  }
+  repeated Chaves chaves = 1;
 }
 
 message ConsultaChavePixRequest{

@@ -1,8 +1,7 @@
-package br.com.zupacademy.keyManager.extension
+package br.com.zupacademy.keyManager.consulta
 
 import br.com.zupacademy.ConsultaChavePixRequest
 import br.com.zupacademy.ConsultaChavePixRequest.FiltroCase.*
-import br.com.zupacademy.keyManager.consulta.Filtro
 import java.lang.IllegalArgumentException
 import javax.validation.ConstraintViolationException
 import javax.validation.Validator

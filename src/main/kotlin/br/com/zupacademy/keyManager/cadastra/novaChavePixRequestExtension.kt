@@ -1,4 +1,4 @@
-package br.com.zupacademy.keyManager.extension
+package br.com.zupacademy.keyManager.cadastra
 
 import br.com.zupacademy.ChavePixRequest
 import br.com.zupacademy.chavePix.TipoChave
