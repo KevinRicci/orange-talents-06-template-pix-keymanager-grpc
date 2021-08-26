@@ -1,9 +1,6 @@
 package br.com.zupacademy.keyManager.consulta
 
-import br.com.zupacademy.ConsultaChavePixRequest
-import br.com.zupacademy.KeyManagerPixServiceConsultaGrpc
-import br.com.zupacademy.TipoChave
-import br.com.zupacademy.TipoConta
+import br.com.zupacademy.*
 import br.com.zupacademy.chavePix.ChavePix
 import br.com.zupacademy.chavePix.ChavePixRepository
 import br.com.zupacademy.chavePix.TipoChave.*
@@ -37,6 +34,60 @@ internal class ConsultaChavePixEndpointTest(
     @Inject val chavePixRepository: ChavePixRepository,
     @Inject val clientChavePixGrpc: KeyManagerPixServiceConsultaGrpc.KeyManagerPixServiceConsultaBlockingStub
 ){
+
+    @Test
+    fun `deve retornar todas as chaves pix por um cliente id`(){
+        //cenário
+        chavePixRepository.save(ChavePix(
+            uuidCliente = "00c9e540-88b4-481f-8748-40b7eca19442",
+            tipoChave = br.com.zupacademy.chavePix.TipoChave.EMAIL,
+            valorChave = "kevin@teste.com",
+            tipoConta = br.com.zupacademy.chavePix.TipoConta.CONTA_POUPANCA,
+            horaCadastro = LocalDateTime.now()
+        ))
+        chavePixRepository.save(ChavePix(
+            uuidCliente = "00c9e540-88b4-481f-8748-40b7eca19442",
+            tipoChave = br.com.zupacademy.chavePix.TipoChave.CELULAR,
+            valorChave = "+5511997477855",
+            tipoConta = br.com.zupacademy.chavePix.TipoConta.CONTA_CORRENTE,
+            horaCadastro = LocalDateTime.now()
+        ))
+
+        //ação
+        val response = clientChavePixGrpc.buscaChaves(BuscaChavesPixRequest.newBuilder()
+            .setUuidCliente("00c9e540-88b4-481f-8748-40b7eca19442")
+            .build())
+
+        //validação
+        assertEquals(2, response.chavesCount)
+        assertEquals("kevin@teste.com", response.getChaves(0).valorChave)
+        assertEquals("+5511997477855", response.getChaves(1).valorChave)
+    }
+
+    @Test
+    fun `nao deve retornar as chaves se o cliente id não for informado`(){
+        //cenário
+        //ação
+        val thrown = assertThrows<StatusRuntimeException> {
+            clientChavePixGrpc.buscaChaves(BuscaChavesPixRequest.newBuilder().build())
+        }
+
+        //validação
+        assertEquals(Status.INVALID_ARGUMENT.code, thrown.status.code)
+        assertEquals("uuid do cliente não pode ser vazio ou nulo", thrown.status.description)
+    }
+
+    @Test
+    fun `deve retornar uma lista vazia caso não encontre nenhuma chave pelo cliente id`(){
+        //cenário
+        //ação
+        val response = clientChavePixGrpc.buscaChaves(BuscaChavesPixRequest.newBuilder()
+            .setUuidCliente("180e3c72-1195-4a2b-8562-1932ab4bcc3e")
+            .build())
+
+        //validação
+        assertEquals(0, response.chavesCount)
+    }
 
     @Test
     fun `deve buscar os dados de uma chave pix pelo seu valor`(){
