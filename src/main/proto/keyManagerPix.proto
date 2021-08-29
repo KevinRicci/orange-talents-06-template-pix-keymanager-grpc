@@ -56,8 +56,8 @@ message ConsultaChavePixResponse{
   string nomeTitular = 5;
   string cpfTitular = 6;
   string nomeInstituicao = 7;
-  int32 agencia = 8;
-  int32 numeroConta = 9;
+  string agencia = 8;
+  string numeroConta = 9;
   TipoConta tipoConta = 10;
   google.protobuf.Timestamp horaCadastro = 11;
 

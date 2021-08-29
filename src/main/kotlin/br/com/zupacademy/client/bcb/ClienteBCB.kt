@@ -63,8 +63,8 @@ data class BCBBuscaChavePixResponse(
             nomeTitular = owner.name,
             cpfTitular = owner.taxIdNumber,
             nomeInstituicao = Instituicoes().of(this.bankAccount.participant),
-            agencia = bankAccount.branch.toInt(),
-            numeroConta = this.bankAccount.accountNumber.toInt(),
+            agencia = bankAccount.branch,
+            numeroConta = this.bankAccount.accountNumber,
             tipoConta = when(this.bankAccount.accountType.name){
                 "CACC" ->{
                     TipoConta.CONTA_CORRENTE

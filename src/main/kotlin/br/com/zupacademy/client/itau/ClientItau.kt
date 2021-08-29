@@ -37,8 +37,8 @@ data class ItauResponse(
             titular.nome,
             titular.cpf,
             instituicao.nome,
-            this.agencia.toInt(),
-            this.numero.toInt(),
+            this.agencia,
+            this.numero,
             TipoConta.valueOf(this.tipo),
             chavePix.horaCadastro
         )
